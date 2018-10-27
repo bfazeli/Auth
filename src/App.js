@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
 import { View } from 'react-native'
 import firebase from 'firebase'
-import { Header } from './components/common'
+import { Header, Button, CardSection, Spinner } from './components/common'
 import LoginForm from './components/LoginForm'
 
 class App extends Component {
+  state = { loggedIn: null}
+
   // Invoke the componentWillMount LCM
   componentWillMount() {
     firebase.initializeApp({
@@ -15,13 +17,37 @@ class App extends Component {
       storageBucket: "auth-f4b09.appspot.com",
       messagingSenderId: "209726283659"
     })
+
+    firebase.auth().onAuthStateChanged((user) => {
+      user ? this.setState({loggedIn:true}) : this.setState({loggedIn:false})
+    }) 
   }
 
+  renderContent() {
+    switch (this.state.loggedIn) {
+      case true:
+        return (
+          <CardSection>
+            <Button onPress={() => firebase.auth().signOut()}>
+             Log Out
+            </Button>
+          </CardSection>
+        )
+      case false:
+        return <LoginForm/>
+      default:
+        return (
+          <CardSection>
+            <Spinner/>
+          </CardSection>
+        )
+    }
+  }
   render() {
     return(
       <View>
         <Header headerText= "Authentication" />
-        <LoginForm />
+        {this.renderContent()}
       </View>
     )
   }
